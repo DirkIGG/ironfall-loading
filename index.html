@@ -5,198 +5,181 @@
 <title>Ironfall — Loading</title>
 <style>
   :root {
-    --gold-1: #6e4f1e;   
-    --gold-2: #b8863b;  
-    --gold-3: #e6c15a;  
-    --track:  #0b0b0d;  
-    --track-border: rgba(230,193,90,.28);
-    --text:   #e6c15a;
-    --muted:  #c3b083;
-    --fade-hold: 6s; 
+    --gold-1: #6e4f1e; --gold-2: #b8863b; --gold-3: #e6c15a;
+    --track:  #0b0b0d; --track-border: rgba(230,193,90,.28);
+    --text:   #e6c15a; --muted:  #c3b083;
   }
- 
   * { box-sizing: border-box; }
- 
   html, body {
-    margin: 0;
-    height: 100%;
-    background: #000;
-    overflow: hidden;
-    font-family: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
-    user-select: none;
+    margin: 0; height: 100%; background: #000; overflow: hidden;
+    font-family: "Segoe UI", "Trebuchet MS", Arial, sans-serif; user-select: none;
   }
-
   .stage {
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100vw;
-    height: 56.25vw;        
-    min-width: 177.78vh;   
-    min-height: 100vh;
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 100vw; height: 56.25vw; min-width: 177.78vh; min-height: 100vh;
   }
- 
   .bg {
-    position: absolute; inset: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
-    z-index: 1;
+    position: absolute; inset: 0; background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.5s ease-in-out; z-index: 1;
   }
   .bg.active { opacity: 1; }
- 
   .info {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    z-index: 2;
-    pointer-events: none;
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; z-index: 2; pointer-events: none;
   }
- 
-  .loader {
-    position: absolute;
-    left: 5.8%;
-    bottom: 5.2%;
-    width: 34%;
-    z-index: 3;
-  }
- 
+  .loader { position: absolute; left: 5.8%; bottom: 5.2%; width: 34%; z-index: 3; }
   .loader-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 0.7vh;
-    font-size: 0.85vw;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 0.7vh; font-size: 0.85vw; letter-spacing: 0.12em; text-transform: uppercase;
   }
   .status { color: var(--muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 75%; }
   .pct    { color: var(--text); font-weight: 600; }
- 
   .track {
-    position: relative;
-    width: 100%;
-    height: 1.05vw;
-    min-height: 12px;
-    background: var(--track);
-    border: 1px solid var(--track-border);
-    border-radius: 999px;
-    overflow: hidden;
+    position: relative; width: 100%; height: 1.05vw; min-height: 12px;
+    background: var(--track); border: 1px solid var(--track-border);
+    border-radius: 999px; overflow: hidden;
     box-shadow: 0 2px 10px rgba(0,0,0,.55), inset 0 0 6px rgba(0,0,0,.6);
   }
- 
   .fill {
-    position: relative;
-    height: 100%;
-    width: 0%;
-    border-radius: 999px;
-    background: linear-gradient(90deg,
-                  var(--gold-1) 0%,
-                  var(--gold-2) 45%,
-                  var(--gold-3) 75%,
-                  var(--gold-2) 100%);
+    position: relative; height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--gold-1) 0%, var(--gold-2) 45%, var(--gold-3) 75%, var(--gold-2) 100%);
     box-shadow: 0 0 12px rgba(230,193,90,.45);
   }
- 
-
   .fill::after {
-    content: "";
-    position: absolute; inset: 0;
+    content: ""; position: absolute; inset: 0;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
-    transform: translateX(-100%);
-    animation: sheen 2.2s linear infinite;
+    transform: translateX(-100%); animation: sheen 2.2s linear infinite;
   }
   @keyframes sheen { to { transform: translateX(100%); } }
+  #debug {
+    position: fixed; top: 10px; left: 10px; z-index: 99; display: none;
+    font: 12px/1.5 Consolas, monospace; color: #d7ffd7;
+    background: rgba(0,0,0,.82); border: 1px solid #3a5; padding: 8px 10px;
+    border-radius: 6px; max-width: 62vw; word-break: break-all; white-space: pre-wrap;
+  }
 </style>
 </head>
 <body>
   <div class="stage">
+    <div class="bg" id="bg1"></div><div class="bg" id="bg2"></div>
+    <div class="bg" id="bg3"></div><div class="bg" id="bg4"></div>
+    <div class="bg" id="bg5"></div><div class="bg" id="bg6"></div>
+    <div class="bg" id="bg7"></div><div class="bg" id="bg8"></div>
 
-    <div class="bg active" style="background-image:url('ifbackground_1.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_2.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_3.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_4.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_5.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_6.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_7.png')"></div>
-    <div class="bg" style="background-image:url('ifbackground_8.png')"></div>
- 
-    <!-- Static info overlay -->
-    <img class="info" src="ironfall-loading.png" alt="">
- 
-    <!-- Loading bar -->
+    <img class="info" id="info" src="ironfall-loading.png" alt="">
+
     <div class="loader">
       <div class="loader-head">
         <span class="status" id="status">Connecting to Ironfall&hellip;</span>
         <span class="pct" id="pct">0%</span>
       </div>
-      <div class="track">
-        <div class="fill" id="fill"></div>
-      </div>
+      <div class="track"><div class="fill" id="fill"></div></div>
     </div>
   </div>
- 
+
+  <div id="debug"></div>
+
 <script>
+  /* ================= config ================= */
+  var TOTAL_BG  = 8, BG_PREFIX = 'ifbackground_', BG_EXT = '.png';
+  var BG_VER    = '1';     // <-- bump this ('2','3'...) whenever you replace a background image,
+                           //     so GMod's browser is forced to re-fetch instead of using a stale/404 cache
+  var FADE_HOLD = 6000;
+  var DEBUG = /[?&]debug=1/i.test(location.search);
 
-  var FADE_HOLD = 6000; 
-  var bgs = Array.prototype.slice.call(document.querySelectorAll('.bg'));
-  var bi = 0;
+  /* ================= background preload + cycle ================= */
+  var loaded = [], failed = [], pending = TOTAL_BG;
+  var dbgBox = document.getElementById('debug');
+  if (DEBUG) dbgBox.style.display = 'block';
+
+  function bgUrl(n) { return BG_PREFIX + n + BG_EXT + '?v=' + BG_VER; }
+
+  function refreshDebug() {
+    if (!DEBUG) return;
+    dbgBox.textContent =
+      'page url : ' + location.href + '\n' +
+      'bg1 url  : ' + new URL(bgUrl(1), location.href).href + '\n' +
+      'bg loaded: [' + loaded.join(', ') + ']\n' +
+      'bg FAILED: [' + failed.join(', ') + ']\n' +
+      'bg pending: ' + pending + '\n----\n' +
+      'total=' + total + '  needed=' + needed + '  downloaded=' + count;
+  }
+
+  for (var i = 1; i <= TOTAL_BG; i++) {
+    (function (n) {
+      var url = bgUrl(n), probe = new Image();
+      probe.onload = function () {
+        document.getElementById('bg' + n).style.backgroundImage = "url('" + url + "')";
+        loaded.push(n); pending--;
+        if (loaded.length === 1) document.getElementById('bg' + n).classList.add('active');
+        refreshDebug();
+      };
+      probe.onerror = function () { failed.push(n); pending--; refreshDebug(); };
+      probe.src = url;
+    })(i);
+  }
+
+  var ptr = 0;
   setInterval(function () {
-    bgs[bi].classList.remove('active');
-    bi = (bi + 1) % bgs.length;
-    bgs[bi].classList.add('active');
+    if (loaded.length < 2) return;
+    document.getElementById('bg' + loaded[ptr]).classList.remove('active');
+    ptr = (ptr + 1) % loaded.length;
+    document.getElementById('bg' + loaded[ptr]).classList.add('active');
   }, FADE_HOLD);
- 
 
-  var fill   = document.getElementById('fill');
-  var pctEl  = document.getElementById('pct');
-  var statEl = document.getElementById('status');
- 
+  /* ================= loading bar ================= */
+  var fill = document.getElementById('fill'),
+      pctEl = document.getElementById('pct'),
+      statEl = document.getElementById('status');
 
-  var EASE        = 0.08; 
-  var TRICKLE_CAP = 95;    
-  var TRICKLE_PPS = 6;    
- 
-  var total = 0, needed = 0, filesDone = false;
-  var trickle = 0, shown = 0;
- 
-  function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode) {}
- 
+  // ---- tunables ----
+  var EASE = 0.10, CREEP_PPS = 3, NODL_CAP = 92;
+
+  var total = 0, needed = -1, count = 0, filesDone = false;
+  var shown = 0, creep = 0;
+
+  function GameDetails(a,b,c,d,e,f) {}
   function SetFilesTotal(t)  { total = t; }
   function SetFilesNeeded(n) { needed = n; if (total > 0 && needed <= 0) filesDone = true; }
- 
   function DownloadingFile(fileName) {
+    count++;
     var short = String(fileName).split('/').pop();
-    statEl.textContent = 'Downloading ' + short;
+    statEl.textContent = total > 0
+      ? 'Downloading ' + short + '  (' + Math.min(count, total) + '/' + total + ')'
+      : 'Downloading ' + short;
   }
-  function SetStatusChanged(status) { if (status) statEl.textContent = status; }
-
-  window.GameDetails = GameDetails;
-  window.SetFilesTotal = SetFilesTotal;
-  window.SetFilesNeeded = SetFilesNeeded;
-  window.DownloadingFile = DownloadingFile;
-  window.SetStatusChanged = SetStatusChanged;
+  function SetStatusChanged(status) { if (status && total <= 0) statEl.textContent = status; }
+  window.GameDetails=GameDetails; window.SetFilesTotal=SetFilesTotal;
+  window.SetFilesNeeded=SetFilesNeeded; window.DownloadingFile=DownloadingFile;
+  window.SetStatusChanged=SetStatusChanged;
 
   var last = performance.now();
   function tick(now) {
-    var dt = (now - last) / 1000; last = now;
-    if (dt > 0.25) dt = 0.25; 
- 
-    var real = total > 0 ? ((total - needed) / total) * 100 : 0;
-    if (total > 0 && needed <= 0) filesDone = true;
- 
-    trickle = Math.min(filesDone ? 100 : TRICKLE_CAP, trickle + TRICKLE_PPS * dt);
-    var target = filesDone ? 100 : Math.max(real, trickle);
- 
+    var dt = (now - last) / 1000; last = now; if (dt > 0.25) dt = 0.25;
+
+    var target;
+    if (filesDone) {
+      target = 100;
+    } else if (total > 0) {
+      var per   = 100 / total;
+      var floor = Math.min(100, (count / total) * 100);
+      creep = Math.max(creep, floor);
+      creep = Math.min(floor + per * 0.9, creep + CREEP_PPS * dt);
+      target = creep;
+    } else {
+      creep = Math.min(NODL_CAP, creep + CREEP_PPS * dt);
+      target = creep;
+    }
+
     var k = 1 - Math.pow(1 - EASE, dt * 60);
     shown += (target - shown) * k;
     if (shown > 99.6) shown = 100;
- 
+
     fill.style.width = shown.toFixed(2) + '%';
     pctEl.textContent = Math.round(shown) + '%';
- 
     if (filesDone && shown >= 99.9) statEl.textContent = 'Entering the castle\u2026';
+
+    if (DEBUG) refreshDebug();
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
