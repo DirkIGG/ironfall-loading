@@ -18,15 +18,22 @@
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 100vw; height: 56.25vw; min-width: 177.78vh; min-height: 100vh;
   }
+
+  /* NOTE: explicit top/left/width/height instead of inset:0 --
+     GMod's browser engine is too old to support the inset shorthand,
+     which is what was collapsing these divs to zero size. */
   .bg {
-    position: absolute; inset: 0; background-size: cover; background-position: center;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover; background-position: center;
     opacity: 0; transition: opacity 1.5s ease-in-out; z-index: 1;
   }
   .bg.active { opacity: 1; }
+
   .info {
-    position: absolute; inset: 0; width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     object-fit: cover; z-index: 2; pointer-events: none;
   }
+
   .loader { position: absolute; left: 5.8%; bottom: 5.2%; width: 34%; z-index: 3; }
   .loader-head {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -46,7 +53,7 @@
     box-shadow: 0 0 12px rgba(230,193,90,.45);
   }
   .fill::after {
-    content: ""; position: absolute; inset: 0;
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
     transform: translateX(-100%); animation: sheen 2.2s linear infinite;
   }
@@ -82,8 +89,6 @@
 <script>
   /* ================= config ================= */
   var TOTAL_BG  = 8, BG_PREFIX = 'ifbackground_', BG_EXT = '.png';
-  var BG_VER    = '1';     // <-- bump this ('2','3'...) whenever you replace a background image,
-                           //     so GMod's browser is forced to re-fetch instead of using a stale/404 cache
   var FADE_HOLD = 6000;
   var DEBUG = /[?&]debug=1/i.test(location.search);
 
@@ -92,13 +97,11 @@
   var dbgBox = document.getElementById('debug');
   if (DEBUG) dbgBox.style.display = 'block';
 
-  function bgUrl(n) { return BG_PREFIX + n + BG_EXT + '?v=' + BG_VER; }
-
   function refreshDebug() {
     if (!DEBUG) return;
     dbgBox.textContent =
       'page url : ' + location.href + '\n' +
-      'bg1 url  : ' + new URL(bgUrl(1), location.href).href + '\n' +
+      'bg1 url  : ' + new URL(BG_PREFIX + '1' + BG_EXT, location.href).href + '\n' +
       'bg loaded: [' + loaded.join(', ') + ']\n' +
       'bg FAILED: [' + failed.join(', ') + ']\n' +
       'bg pending: ' + pending + '\n----\n' +
@@ -107,15 +110,15 @@
 
   for (var i = 1; i <= TOTAL_BG; i++) {
     (function (n) {
-      var url = bgUrl(n), probe = new Image();
+      var file = BG_PREFIX + n + BG_EXT, probe = new Image();
       probe.onload = function () {
-        document.getElementById('bg' + n).style.backgroundImage = "url('" + url + "')";
+        document.getElementById('bg' + n).style.backgroundImage = "url('" + file + "')";
         loaded.push(n); pending--;
         if (loaded.length === 1) document.getElementById('bg' + n).classList.add('active');
         refreshDebug();
       };
       probe.onerror = function () { failed.push(n); pending--; refreshDebug(); };
-      probe.src = url;
+      probe.src = file;
     })(i);
   }
 
@@ -132,11 +135,8 @@
       pctEl = document.getElementById('pct'),
       statEl = document.getElementById('status');
 
-  // ---- tunables ----
   var EASE = 0.10, CREEP_PPS = 3, NODL_CAP = 92;
-
-  var total = 0, needed = -1, count = 0, filesDone = false;
-  var shown = 0, creep = 0;
+  var total = 0, needed = -1, count = 0, filesDone = false, shown = 0, creep = 0;
 
   function GameDetails(a,b,c,d,e,f) {}
   function SetFilesTotal(t)  { total = t; }
@@ -156,13 +156,11 @@
   var last = performance.now();
   function tick(now) {
     var dt = (now - last) / 1000; last = now; if (dt > 0.25) dt = 0.25;
-
     var target;
     if (filesDone) {
       target = 100;
     } else if (total > 0) {
-      var per   = 100 / total;
-      var floor = Math.min(100, (count / total) * 100);
+      var per = 100 / total, floor = Math.min(100, (count / total) * 100);
       creep = Math.max(creep, floor);
       creep = Math.min(floor + per * 0.9, creep + CREEP_PPS * dt);
       target = creep;
@@ -170,15 +168,12 @@
       creep = Math.min(NODL_CAP, creep + CREEP_PPS * dt);
       target = creep;
     }
-
     var k = 1 - Math.pow(1 - EASE, dt * 60);
     shown += (target - shown) * k;
     if (shown > 99.6) shown = 100;
-
     fill.style.width = shown.toFixed(2) + '%';
     pctEl.textContent = Math.round(shown) + '%';
     if (filesDone && shown >= 99.9) statEl.textContent = 'Entering the castle\u2026';
-
     if (DEBUG) refreshDebug();
     requestAnimationFrame(tick);
   }
