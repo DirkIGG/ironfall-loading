@@ -19,9 +19,6 @@
     width: 100vw; height: 56.25vw; min-width: 177.78vh; min-height: 100vh;
   }
 
-  /* NOTE: explicit top/left/width/height instead of inset:0 --
-     GMod's browser engine is too old to support the inset shorthand,
-     which is what was collapsing these divs to zero size. */
   .bg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background-size: cover; background-position: center;
@@ -87,12 +84,11 @@
   <div id="debug"></div>
 
 <script>
-  /* ================= config ================= */
+  
   var TOTAL_BG  = 8, BG_PREFIX = 'ifbackground_', BG_EXT = '.png';
   var FADE_HOLD = 6000;
   var DEBUG = /[?&]debug=1/i.test(location.search);
 
-  /* ================= background preload + cycle ================= */
   var loaded = [], failed = [], pending = TOTAL_BG;
   var dbgBox = document.getElementById('debug');
   if (DEBUG) dbgBox.style.display = 'block';
@@ -130,13 +126,16 @@
     document.getElementById('bg' + loaded[ptr]).classList.add('active');
   }, FADE_HOLD);
 
-  /* ================= loading bar ================= */
   var fill = document.getElementById('fill'),
       pctEl = document.getElementById('pct'),
       statEl = document.getElementById('status');
 
-  var EASE = 0.10, CREEP_PPS = 3, NODL_CAP = 92;
-  var total = 0, needed = -1, count = 0, filesDone = false, shown = 0, creep = 0;
+  var EASE      = 0.10;
+  var NODL_PPS  = 4;
+  var NODL_CAP  = 90;
+
+  var total = 0, needed = -1, count = 0, filesDone = false;
+  var shown = 0, trickle = 0;
 
   function GameDetails(a,b,c,d,e,f) {}
   function SetFilesTotal(t)  { total = t; }
@@ -156,24 +155,30 @@
   var last = performance.now();
   function tick(now) {
     var dt = (now - last) / 1000; last = now; if (dt > 0.25) dt = 0.25;
+
     var target;
     if (filesDone) {
       target = 100;
     } else if (total > 0) {
-      var per = 100 / total, floor = Math.min(100, (count / total) * 100);
-      creep = Math.max(creep, floor);
-      creep = Math.min(floor + per * 0.9, creep + CREEP_PPS * dt);
-      target = creep;
+
+      target = Math.min(99, (count / total) * 100 + (100 / total) * 0.75);
     } else {
-      creep = Math.min(NODL_CAP, creep + CREEP_PPS * dt);
-      target = creep;
+
+      trickle = Math.min(NODL_CAP, trickle + NODL_PPS * dt);
+      target = trickle;
     }
+
+    if (target < shown) target = shown;
+    if (target > 100) target = 100;
+
     var k = 1 - Math.pow(1 - EASE, dt * 60);
     shown += (target - shown) * k;
-    if (shown > 99.6) shown = 100;
+    if (filesDone && shown > 99.6) shown = 100;
+
     fill.style.width = shown.toFixed(2) + '%';
     pctEl.textContent = Math.round(shown) + '%';
     if (filesDone && shown >= 99.9) statEl.textContent = 'Entering the castle\u2026';
+
     if (DEBUG) refreshDebug();
     requestAnimationFrame(tick);
   }
